@@ -157,8 +157,8 @@ export default function HomePage() {
   return (
     <div className="flex flex-col p-20 justify-center items-center">
       <h1
-        className="p-5 mb-4 justify-center items-center font-sans text-xl font-semibold shadow-orange-500
-      transition-all delay-300 shadow-none hover:text-orange-700 hover:shadow-orange-700 
+        className="p-5 mb-4 underline justify-center items-center font-sans text-3xl antialiased font-semibold shadow-orange-500
+      transition-all delay-200 shadow-none hover:text-orange-700 hover:shadow-orange-700 
       hover:scale-105 cursor-pointer active:scale-95"
         onClick={() =>
           window.open("https://github.com/angeltamang123/nephased", "_blank")
@@ -185,7 +185,10 @@ export default function HomePage() {
       {showComments && (
         <div className="flex bg-gray-900 border-2 p-3 pl-10 pr-10 border-white rounded-lg flex-col flex-none mt-5 w-full break-words ">
           {comments.map((c) => (
-            <div key={c.commentId} className="mb-4 w-full break-words">
+            <div
+              key={c.commentId}
+              className=" mb-2 border-b w-full break-words"
+            >
               {c.hidden ? (
                 <div>
                   <strong className="shadow-transparent">[Censored]</strong>
@@ -196,7 +199,7 @@ export default function HomePage() {
                   </text>
                   <button
                     onClick={() => toggleHidden(c.commentId)}
-                    className="ml-6 border-1 bg-red-700 p-1 rounded-md text-white "
+                    className="ml-6 mb-1 border-1 bg-red-700 p-1 rounded-md text-white active:scale-95"
                   >
                     View
                   </button>
@@ -209,7 +212,7 @@ export default function HomePage() {
                   )}
                   {["VIOLENCE", "PROFANITY_1"].includes(c.sentiment ?? "") && (
                     <button
-                      className="ml-6 border-1 bg-cyan-500 rounded-md p-1 text-white "
+                      className="ml-6 mb-1 border-1 bg-cyan-500 rounded-md p-1 text-white active:scale-95"
                       onClick={() => toggleHidden(c.commentId)}
                     >
                       Hide
@@ -235,11 +238,19 @@ export default function HomePage() {
 function AddCommentForm({ onAddComment }: AddCommentFormProps) {
   const [text, setText] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) e.preventDefault();
     if (text.trim()) {
       onAddComment(text.trim());
       setText("");
+    }
+  };
+
+  const handleEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    debugger;
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
@@ -251,11 +262,12 @@ function AddCommentForm({ onAddComment }: AddCommentFormProps) {
         setText("");
       }}
     >
-      <div className="flex flex-col">
+      <div className="flex flex-col mt-2">
         <textarea
           className="text-black w-full p-2 border rounded resize-none"
           placeholder="Add a comment..."
           value={text}
+          onKeyDown={handleEnter}
           onChange={(e) => {
             setText(e.target.value);
             e.target.style.height = "40px";
