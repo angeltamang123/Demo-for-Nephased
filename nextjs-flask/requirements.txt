@@ -1,2 +1,2 @@
 Flask
-nephased>=0.0.31
+nephased>=0.0.32
