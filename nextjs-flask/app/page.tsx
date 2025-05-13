@@ -217,7 +217,7 @@ export default function HomePage() {
           ))}
           {pendingComments.length > 0 &&
             pendingComments.map((c, index) => (
-              <Skeleton key={index} className="mt-1 mb-1 h-4 w-[400px]" />
+              <Skeleton key={index} className="mt-1 mb-1 h-4 w-full" />
             ))}
 
           <AddCommentForm onAddComment={handleAddComment} />
