@@ -1,4 +1,4 @@
-# example: api/index.py
+
 from flask import Flask, request, jsonify
 from nephased import Nephased
 
@@ -10,7 +10,9 @@ global_nep_model = None
 def get_model():
     global global_nep_model
     if global_nep_model is None:
+        print("Initializing Nephased model instance...")
         global_nep_model = Nephased()  # load the model
+        print("Nephased model instance created.")
     return global_nep_model
 
 @app.route("/api/init", methods=["GET"])
