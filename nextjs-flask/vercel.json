@@ -1,6 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" },
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
   "functions": {
     "api/index.py": {
       "maxDuration": 60
