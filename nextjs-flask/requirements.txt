@@ -1,4 +1,2 @@
 Flask
-torch>=2.1.0
-nephased[ml]>=0.0.34
 gradio_client
