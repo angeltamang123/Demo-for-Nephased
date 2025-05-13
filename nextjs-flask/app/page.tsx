@@ -96,7 +96,7 @@ export default function HomePage() {
           newComment.sentiment = sentiments[i];
 
           // If sentiment is VIOLENCE or PROFANITY_1, hide by default
-          if (["VIOLENCE", "PROFANITY_1"].includes(sentiments[i])) {
+          if (["VIOLENCE", "HIGH PROFANITY"].includes(sentiments[i])) {
             newComment.hidden = true;
           } else {
             newComment.hidden = false;
@@ -167,12 +167,7 @@ export default function HomePage() {
         Nephased Demo
       </h1>
       <div className="relative h-96 w-full shadow-sm shadow-white bg-white">
-        <Image
-          src="/penguins.png"
-          alt="Penguins"
-          fill
-          className="object-contain"
-        />
+        <Image src="/demo.jpg" alt="Penguins" fill className="object-fill" />
       </div>
 
       <button
@@ -210,7 +205,9 @@ export default function HomePage() {
                   {c.sentiment && (
                     <em style={{ color: "white" }}>({c.sentiment})</em>
                   )}
-                  {["VIOLENCE", "PROFANITY_1"].includes(c.sentiment ?? "") && (
+                  {["VIOLENCE", "HIGH PROFANITY"].includes(
+                    c.sentiment ?? ""
+                  ) && (
                     <button
                       className="ml-6 mb-1 border-1 bg-cyan-500 rounded-md p-1 text-white active:scale-95"
                       onClick={() => toggleHidden(c.commentId)}
