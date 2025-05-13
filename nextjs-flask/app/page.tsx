@@ -45,16 +45,8 @@ export default function HomePage() {
 
   // On mount, call /api/init to warm up the model
   useEffect(() => {
-    const initModel = async () => {
-      try {
-        const res = await axios.get("/api/init", { timeout: 120000 });
-        if (res.status === 200) setLoading(false);
-      } catch (err) {
-        console.error("Failed to init model:", err);
-        setTimeout(initModel, 10000);
-      }
-    };
-    initModel();
+    setLoading(true);
+    setTimeout(() => setLoading(false), 3000); //simulating 5 second loading instead of previous /api/init request
   }, []);
 
   // Whenever pendingComments changes, reset a 5-second timer
@@ -170,6 +162,7 @@ export default function HomePage() {
         <Image
           src="/penguins.png"
           alt="Penguins"
+          priority
           fill
           className="object-contain"
         />
@@ -192,11 +185,11 @@ export default function HomePage() {
               {c.hidden ? (
                 <div>
                   <strong className="shadow-transparent">[Censored]</strong>
-                  <text>
+                  <p>
                     {" "}
                     This Comment has been hidden for {}
                     {c.sentiment === "VIOLENCE" ? "violence" : "profanity"}
-                  </text>
+                  </p>
                   <button
                     onClick={() => toggleHidden(c.commentId)}
                     className="ml-6 mb-1 border-1 bg-red-700 p-1 rounded-md text-white active:scale-95"
@@ -223,8 +216,8 @@ export default function HomePage() {
             </div>
           ))}
           {pendingComments.length > 0 &&
-            pendingComments.map((c) => (
-              <Skeleton className="mt-1 mb-1 h-4 w-[400px]" />
+            pendingComments.map((c, index) => (
+              <Skeleton key={index} className="mt-1 mb-1 h-4 w-[400px]" />
             ))}
 
           <AddCommentForm onAddComment={handleAddComment} />
