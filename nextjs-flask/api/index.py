@@ -27,19 +27,25 @@ HF_AUTH_TOKEN = os.getenv("HF_TOKEN")
 
 gradio_client_instance = None
 
-if HF_AUTH_TOKEN:
-    try:
-        gradio_client_instance = Client(SPACE_ID, hf_token=HF_AUTH_TOKEN)
-        app.logger.info(f"Gradio Client initialized successfully for space: {SPACE_ID}")
-    except Exception as e:
-        app.logger.error(f"Failed to initialize Gradio Client: {e}")       
-else:
-    app.logger.warning("HF_TOKEN not found. Gradio Client for private space will not be initialized.")
+def get_gradio_client():
+    global gradio_client_instance
+    if gradio_client_instance is None:
+        if HF_AUTH_TOKEN:
+            try:
+                gradio_client_instance = Client(SPACE_ID, hf_token=HF_AUTH_TOKEN)
+                app.logger.info(f"Gradio Client initialized successfully for space: {SPACE_ID}")
+            except Exception as e:
+                app.logger.error(f"Failed to initialize Gradio Client: {e}")       
+        else:
+            app.logger.warning("HF_TOKEN not found. Gradio Client for private space will not be initialized.")
+    return gradio_client_instance
 
 
 @app.route("/api/predict", methods=["POST"])
 def predict():
-    if not gradio_client_instance:
+    client = get_gradio_client()
+
+    if not client:
         app.logger.error("Gradio Client is not initialized. Check HF_TOKEN and Space ID.")
         return jsonify({"status": "error", "message": "Server configuration error: Gradio client not ready"}), 500
     
@@ -64,7 +70,7 @@ def predict():
         app.logger.info(f"Sending predict request to Gradio Space using gradio_client.")
         app.logger.debug(f"Payload for Gradio function: {gradio_function_payload}")
 
-        result_from_gradio = gradio_client_instance.predict(
+        result_from_gradio = client.predict(
             gradio_function_payload,
             api_name=API_NAME
         )

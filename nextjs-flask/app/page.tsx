@@ -76,34 +76,73 @@ export default function HomePage() {
 
     // Collect just the text
     const texts = pendingComments.map((c) => c.text);
-    try {
-      const res = await axios.post("/api/predict", { texts });
-      if (res.data.status === "ok") {
-        const { sentiments } = res.data;
+    const maxRetries = 3;
+    let attempt = 0;
 
-        // Create a copy of existing comments
-        const updatedComments = [...comments];
-        for (let i = 0; i < sentiments.length; i++) {
-          const newComment = { ...pendingComments[i] };
-          newComment.sentiment = sentiments[i];
+    while (attempt < maxRetries) {
+      try {
+        const res = await axios.post(
+          "/api/predict",
+          { texts },
+          { timeout: 10000 }
+        );
+        if (res.data.status === "ok") {
+          const { sentiments } = res.data;
 
-          // If sentiment is VIOLENCE or PROFANITY_1, hide by default
-          if (["VIOLENCE", "PROFANITY_1"].includes(sentiments[i])) {
-            newComment.hidden = true;
-          } else {
-            newComment.hidden = false;
+          // Create a copy of existing comments
+          const updatedComments = [...comments];
+          for (let i = 0; i < sentiments.length; i++) {
+            const newComment = { ...pendingComments[i] };
+            newComment.sentiment = sentiments[i];
+
+            // If sentiment is VIOLENCE or PROFANITY_1, hide by default
+            if (["VIOLENCE", "PROFANITY_1"].includes(sentiments[i])) {
+              newComment.hidden = true;
+            } else {
+              newComment.hidden = false;
+            }
+
+            updatedComments.push(newComment);
           }
 
-          updatedComments.push(newComment);
+          // Save updated comments, clear pending
+          setComments(updatedComments);
+          setPendingComments([]);
+          return;
+        } else {
+          console.warn(
+            "Received error from backend:",
+            res.data.message || "Unknown"
+          );
+          throw new Error(res.data.message || "Error from backend");
+        }
+      } catch (error: unknown) {
+        const isAxiosError =
+          typeof error === "object" && error !== null && "response" in error;
+
+        const isRetryable =
+          (error instanceof Error && error.message.includes("Gradio")) ||
+          (isAxiosError &&
+            ((error as any).code === "ECONNABORTED" ||
+              (error as any).response?.status === 500 ||
+              (error as any).response?.status === 503 ||
+              (error as any).response?.data?.message?.includes("Gradio")));
+
+        if (!isRetryable) {
+          console.error("Non-retryable error from /api/predict:", error);
+          break;
         }
 
-        // Save updated comments, clear pending
-        setComments(updatedComments);
-        setPendingComments([]);
+        attempt++;
+        const delay = 1000 * Math.pow(2, attempt);
+        console.warn(
+          `Retrying (${attempt}/${maxRetries}) after ${delay / 1000}s...`
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-    } catch (error) {
-      console.error("Error from /api/predict:", error);
     }
+    console.error("Failed to get prediction after retries.");
   };
 
   // Add a new comment to the 'pending' queue
@@ -219,6 +258,11 @@ export default function HomePage() {
             pendingComments.map((c, index) => (
               <Skeleton key={index} className="mt-1 mb-1 h-4 w-full" />
             ))}
+          {pendingComments.length > 0 && (
+            <p className="mt-1 mb-1 h-4 text-red-800 w-full italic">
+              Cold Start can take a while!!
+            </p>
+          )}
 
           <AddCommentForm onAddComment={handleAddComment} />
         </div>
