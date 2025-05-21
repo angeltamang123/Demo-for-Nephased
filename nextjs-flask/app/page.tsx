@@ -76,7 +76,7 @@ export default function HomePage() {
 
     // Collect just the text
     const texts = pendingComments.map((c) => c.text);
-    const maxRetries = 3;
+    const maxRetries = 5;
     let attempt = 0;
 
     while (attempt < maxRetries) {
@@ -134,7 +134,7 @@ export default function HomePage() {
         }
 
         attempt++;
-        const delay = 1000 * Math.pow(2, attempt);
+        const delay = 60000 * Math.pow(2, attempt);
         console.warn(
           `Retrying (${attempt}/${maxRetries}) after ${delay / 1000}s...`
         );
