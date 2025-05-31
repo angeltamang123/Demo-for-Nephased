@@ -5,6 +5,7 @@ import axios from "axios";
 import { LoaderIcon } from "lucide-react";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 // Define the shape of a comment
 interface CommentType {
@@ -138,11 +139,23 @@ export default function HomePage() {
         console.warn(
           `Retrying (${attempt}/${maxRetries}) after ${delay / 1000}s...`
         );
+        toast.error(
+          `Cold Starting: retrying (${attempt}/${maxRetries}) after ${
+            delay / 1000
+          }s...`,
+          {
+            description: "Sleeping model can take upto 5 mins to cold Start",
+            classNames: {
+              description: "!text-black",
+            },
+          }
+        );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
     console.error("Failed to get prediction after retries.");
+    toast.error("Failed to get predictions after retries.");
   };
 
   // Add a new comment to the 'pending' queue
@@ -222,29 +235,28 @@ export default function HomePage() {
               className=" mb-2 border-b w-full break-words"
             >
               {c.hidden ? (
-                <div>
-                  <strong className="shadow-transparent">[Censored]</strong>
+                <div className="md:flex md:items-center">
                   <p>
-                    {" "}
-                    This Comment has been hidden for {}
+                    <strong className="shadow-transparent">[Censored]</strong>{" "}
+                    This Comment has been hidden for{" "}
                     {c.sentiment === "VIOLENCE" ? "violence" : "profanity"}
                   </p>
                   <button
                     onClick={() => toggleHidden(c.commentId)}
-                    className="ml-6 mb-1 border-1 bg-red-700 p-1 rounded-md text-white active:scale-95"
+                    className="md:ml-6 mb-1 border-1 bg-red-700 p-1 text-xs rounded-md text-white active:scale-95"
                   >
                     View
                   </button>
                 </div>
               ) : (
-                <div>
+                <div className="md:flex items-center">
                   {c.text}{" "}
                   {c.sentiment && (
                     <em style={{ color: "white" }}>({c.sentiment})</em>
                   )}
                   {["VIOLENCE", "PROFANITY_1"].includes(c.sentiment ?? "") && (
                     <button
-                      className="ml-6 mb-1 border-1 bg-cyan-500 rounded-md p-1 text-white active:scale-95"
+                      className="md:ml-6 text-xs mb-1 border-1 bg-cyan-500 rounded-md p-1 text-white active:scale-95"
                       onClick={() => toggleHidden(c.commentId)}
                     >
                       Hide
@@ -284,7 +296,6 @@ function AddCommentForm({ onAddComment }: AddCommentFormProps) {
   };
 
   const handleEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    debugger;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
@@ -301,7 +312,7 @@ function AddCommentForm({ onAddComment }: AddCommentFormProps) {
     >
       <div className="flex flex-col mt-2">
         <textarea
-          className="text-black w-full p-2 border rounded resize-none"
+          className="text-black text-xs md:text-lg w-full p-2 border rounded resize-none"
           placeholder="Add a comment..."
           value={text}
           onKeyDown={handleEnter}
